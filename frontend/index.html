@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexBank Analytics | Transaction Insight Explorer</title>
+    <meta name="description"
+        content="Advanced descriptive analytics dashboard for bank transaction analysis with custom filtering, insights, and interactive visualizations.">
+    <!-- Modern Typography: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Interactive Background Bubbles -->
+    <div class="bg-bubble blob-1"></div>
+    <div class="bg-bubble blob-2"></div>
+    <div class="bg-bubble blob-3"></div>
+
+    <!-- Cursor Follower -->
+    <div id="cursor-follower"></div>
+
+    <div class="app-wrapper">
+        <!-- Floating Header -->
+        <header class="floating-header">
+            <div class="logo">
+                <div class="logo-box"><i class="fa-solid fa-shapes"></i></div>
+                <h1>NexBank<span>Flow</span></h1>
+            </div>
+
+            <nav class="pill-nav" id="main-nav">
+                <button class="nav-pill active" data-target="overview"><i class="fa-solid fa-layer-group"></i>
+                    Overview</button>
+                <button class="nav-pill" data-target="explorer"><i class="fa-solid fa-magnifying-glass-chart"></i>
+                    Insight Explorer</button>
+                <button class="nav-pill" data-target="demographics"><i class="fa-solid fa-users"></i> Customers</button>
+                <button class="nav-pill" data-target="fraud"><i class="fa-solid fa-shield-cat"></i> Fraud Risk</button>
+                <button class="nav-pill" data-target="geography"><i class="fa-solid fa-map-location-dot"></i>
+                    Global</button>
+                <button class="nav-pill" data-target="time"><i class="fa-solid fa-clock"></i> Timeline</button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="action-btn" id="theme-toggle-btn" title="Toggle theme"><i
+                        class="fa-solid fa-circle-half-stroke"></i></button>
+                <div class="profile-chip">
+                    <img src="https://i.pravatar.cc/150?img=47" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================================================ -->
+        <!-- SECTION A: OVERALL DASHBOARD (Default View) -->
+        <!-- ================================================ -->
+        <main class="workspace" id="section-overall">
+
+            <!-- Context & KPI Sidebar (Left) -->
+            <section class="metrics-panel">
+                <div class="context-header slide-right">
+                    <h2>Live Metrics</h2>
+                    <p>Dataset: Oct 13 - Oct 16, 2020</p>
+                    <div class="tag-row">
+                        <span class="tag verified"><i class="fa-solid fa-check-circle"></i> Cleaned</span>
+                        <span class="tag records"><i class="fa-solid fa-database"></i> 100K Nodes</span>
+                    </div>
+                </div>
+
+                <div class="kpi-stack">
+                    <div class="tilt-card kpi-card-light slide-right delay-1">
+                        <div class="kpi-icon-wrap violet"><i class="fa-solid fa-vault"></i></div>
+                        <div class="kpi-data">
+                            <h4>Total Volume</h4>
+                            <h2>£<span class="counter" data-target="11257356">0</span></h2>
+                            <p class="trend up"><i class="fa-solid fa-arrow-up-right-dots"></i> +14.2% Growth</p>
+                        </div>
+                    </div>
+
+                    <div class="tilt-card kpi-card-light slide-right delay-2">
+                        <div class="kpi-icon-wrap indigo"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                        <div class="kpi-data">
+                            <h4>Processed Transactions</h4>
+                            <h2><span class="counter" data-target="100000">0</span></h2>
+                            <p class="trend neutral">100% Integrity Match</p>
+                        </div>
+                    </div>
+
+                    <div class="tilt-card kpi-card-light slide-right delay-3">
+                        <div class="kpi-icon-wrap orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="kpi-data">
+                            <h4>Fraud Detection Rate</h4>
+                            <h2><span class="counter" data-target="7.20">0</span>%</h2>
+                            <p class="trend down"><i class="fa-solid fa-arrow-trend-down"></i> High Risk Alerts Capped
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-box slide-right delay-4">
+                    <h3>Generate Report</h3>
+                    <p>Compile insights into dashboard.</p>
+                    <button id="export-pdf-btn" class="primary-btn pulse-glow">Export to PDF <i
+                            class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <!-- PDF Export Progress Overlay -->
+                <div id="pdf-overlay" class="pdf-overlay hidden">
+                    <div class="pdf-modal">
+                        <div class="pdf-spinner"></div>
+                        <h3 id="pdf-status">Preparing Report...</h3>
+                        <p id="pdf-progress">Loading chart images (0/13)</p>
+                        <div class="pdf-progress-bar">
+                            <div id="pdf-bar" class="pdf-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dynamic Chart Display Arena (Right) -->
+            <section class="visualization-arena fade-in delay-2">
+                <div class="arena-header">
+                    <h2 id="dynamic-title">Transaction Amount Distribution</h2>
+                    <span class="badge-pill">Matplotlib Rendered</span>
+                </div>
+
+                <div class="chart-display-card">
+                    <!-- Image loader overlay -->
+                    <div id="loader" class="loader-overlay hidden">
+                        <div class="spinner"></div>
+                    </div>
+                    <!-- Chart Image -->
+                    <img id="main-chart-img" src="/outputs/charts/01_amount_distribution.png"
+                        alt="Dynamic Analytical Chart">
+                </div>
+
+                <div class="arena-footer">
+                    <div class="insight-box">
+                        <div class="insight-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                        <div>
+                            <h4>Key Insight Generated</h4>
+                            <p id="dynamic-insight">The dataset is highly right-skewed. The average transaction (£112)
+                                is pulled up by extreme outliers despite a median of only £30.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ================================================ -->
+        <!-- SECTION B: TRANSACTION INSIGHT EXPLORER -->
+        <!-- ================================================ -->
+        <main class="explorer-workspace hidden" id="section-explorer">
+
+            <!-- Explorer Header -->
+            <div class="explorer-hero fade-in">
+                <div class="explorer-hero-icon">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                </div>
+                <div>
+                    <h2>Transaction Insight Explorer</h2>
+                    <p>Select filters to analyze specific transaction segments. All metrics are computed dynamically
+                        from the actual dataset.</p>
+                </div>
+            </div>
+
+            <div class="explorer-grid">
+
+                <!-- Left: Filter Panel -->
+                <aside class="filter-panel fade-in delay-1" id="filter-panel">
+                    <div class="filter-panel-header">
+                        <h3><i class="fa-solid fa-sliders"></i> Filters</h3>
+                        <button class="reset-btn" id="reset-filters-btn">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label for="filter-bank"><i class="fa-solid fa-building-columns"></i> Bank</label>
+                            <select id="filter-bank">
+                                <option value="All">All Banks</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-card"><i class="fa-solid fa-credit-card"></i> Card Type</label>
+                            <select id="filter-card">
+                                <option value="All">All Card Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-entry"><i class="fa-solid fa-wifi"></i> Entry Mode</label>
+                            <select id="filter-entry">
+                                <option value="All">All Entry Modes</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-txntype"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transaction
+                                Type</label>
+                            <select id="filter-txntype">
+                                <option value="All">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-merchant"><i class="fa-solid fa-shop"></i> Merchant Group</label>
+                            <select id="filter-merchant">
+                                <option value="All">All Merchants</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-country"><i class="fa-solid fa-globe"></i> Country</label>
+                            <select id="filter-country">
+                                <option value="All">All Countries</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-gender"><i class="fa-solid fa-venus-mars"></i> Gender</label>
+                            <select id="filter-gender">
+                                <option value="All">All Genders</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-age"><i class="fa-solid fa-users-between-lines"></i> Age Group</label>
+                            <select id="filter-age">
+                                <option value="All">All Age Groups</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-fraud"><i class="fa-solid fa-shield-halved"></i> Fraud Status</label>
+                            <select id="filter-fraud">
+                                <option value="All">All Statuses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-group-date">
+                            <label><i class="fa-solid fa-calendar-days"></i> Date Range</label>
+                            <div class="date-row">
+                                <input type="date" id="filter-date-from" placeholder="From">
+                                <span class="date-sep">to</span>
+                                <input type="date" id="filter-date-to" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="analyze-btn" id="analyze-btn">
+                            <i class="fa-solid fa-bolt"></i> ANALYZE
+                        </button>
+                    </div>
+
+                    <!-- Active Filters Tags -->
+                    <div class="active-filters" id="active-filters"></div>
+                </aside>
+
+                <!-- Right: Results Panel -->
+                <div class="results-panel fade-in delay-2" id="results-panel">
+
+                    <!-- Results: Loading State -->
+                    <div class="results-loading hidden" id="results-loading">
+                        <div class="spinner-lg"></div>
+                        <p>Analyzing transactions...</p>
+                    </div>
+
+                    <!-- Results: Empty / Initial State -->
+                    <div class="results-empty" id="results-empty">
+                        <div class="results-empty-icon">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h3>Select Filters & Analyze</h3>
+                        <p>Choose one or more filters from the left panel and click <strong>ANALYZE</strong> to explore
+                            transaction segments.</p>
+                    </div>
+
+                    <!-- Results: No Data -->
+                    <div class="results-no-data hidden" id="results-no-data">
+                        <div class="results-empty-icon warning">
+                            <i class="fa-solid fa-filter-circle-xmark"></i>
+                        </div>
+                        <h3>No Transactions Found</h3>
+                        <p>No transactions match the selected criteria. Try adjusting your filters.</p>
+                    </div>
+
+                    <!-- Results: Data Found -->
+                    <div class="results-content hidden" id="results-content">
+
+                        <!-- Summary Badge -->
+                        <div class="results-summary-badge" id="results-badge">
+                            <div class="badge-count">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span id="result-count">0</span> transactions matched
+                            </div>
+                            <div class="badge-pct" id="result-pct"></div>
+                        </div>
+
+                        <!-- KPI Cards Grid -->
+                        <section class="results-kpis">
+                            <h3 class="section-title"><i class="fa-solid fa-chart-column"></i> Analysis Results</h3>
+                            <div class="kpi-grid" id="kpi-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </section>
+
+                        <!-- Deeper Stats -->
+                        <section class="results-deep-stats">
+                            <h3 class="section-title"><i class="fa-solid fa-microscope"></i> Deeper Statistical Analysis
+                            </h3>
+                            <div class="deep-stats-grid" id="deep-stats-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </section>
+
+                        <!-- Charts Section -->
+                        <section class="results-charts">
+                            <h3 class="section-title"><i class="fa-solid fa-chart-area"></i> Dynamic Charts</h3>
+                            <div class="charts-grid" id="charts-grid">
+                                <div class="chart-card">
+                                    <h4>Transactions by Day</h4>
+                                    <canvas id="chart-day"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h4>Hourly Pattern</h4>
+                                    <canvas id="chart-hourly"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h4>Time Period</h4>
+                                    <canvas id="chart-period"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h4>Card Type Distribution</h4>
+                                    <canvas id="chart-card"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h4>Merchant Distribution</h4>
+                                    <canvas id="chart-merchant"></canvas>
+                                </div>
+                                <div class="chart-card">
+                                    <h4>Transaction Type</h4>
+                                    <canvas id="chart-txntype"></canvas>
+                                </div>
+                                <div class="chart-card chart-card-wide">
+                                    <h4>Amount Distribution</h4>
+                                    <canvas id="chart-amount"></canvas>
+                                </div>
+                                <div class="chart-card chart-card-wide">
+                                    <h4>Transaction Trend</h4>
+                                    <canvas id="chart-trend"></canvas>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Key Insights -->
+                        <section class="results-insights">
+                            <h3 class="section-title"><i class="fa-solid fa-lightbulb"></i> Key Insights</h3>
+                            <div class="insights-list" id="insights-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </section>
+
+                        <!-- Data-Driven Suggestions -->
+                        <section class="results-suggestions">
+                            <h3 class="section-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Data-Driven
+                                Suggestions</h3>
+                            <div class="suggestions-list" id="suggestions-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
